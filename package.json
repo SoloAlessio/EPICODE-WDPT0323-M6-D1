@@ -1,0 +1,23 @@
+{
+  "name": "epicode-wdpt0323---m6-d1",
+  "version": "1.0.0",
+  "description": "Module 5 . Lesson 1",
+  "main": "index.js",
+  "scripts": {
+    "test": "start",
+    "dev": "nodemon src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "EPICODE-WDPT0323-M6-D1"
+  },
+  "keywords": [
+    "EPICODE"
+  ],
+  "author": "Alessio Belcastro",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "nodemon": "^3.0.1"
+  }
+}
