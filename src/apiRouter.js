@@ -1,5 +1,6 @@
 import express from "express";
 import authorsRouter from "./authorsRouter.js";
+import blogPostRouter from "./blogPostRouter.js";
 
 const apiRouter = express.Router();
 
@@ -27,12 +28,7 @@ apiRouter.get("/test", (req, res) => {
     res.json({message: "Hello, World!"})
 })
 
-apiRouter.get("/body", (req, res) => {
-    console.log(req.body);
-
-    res.status(200).send();
-})
-
 apiRouter.use("/authors", authorsRouter);
+apiRouter.use("/blogPosts", blogPostRouter); 
 
 export default apiRouter;

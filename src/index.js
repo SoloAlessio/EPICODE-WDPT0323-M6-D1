@@ -1,19 +1,22 @@
 import express from 'express'
-import {mongoose} from 'mongoose'
 import apiRouter from './apiRouter.js';
+import mongoose from 'mongoose'
+import list from "express-list-endpoints";
+import { GenericError } from './middlewares/Error.js';
 
 const server = express()
 const port = 3030;
 
 server.use("/api", apiRouter)
 
+server.use(GenericError)
+
 mongoose
-  .connect(
-    "mongodb+srv://belcastroalessio:vPv7DcDu9-wa%23K9@epicode-wdpt0323.nrpo7is.mongodb.net/epicode"
-  )
+  .connect(process.env.MONGO_URL)
   .then(() => {
     server.listen(port, () => {
       console.log("🚀 Server listening to port: " + port);
+      console.log(list(server));
     });
   })
   .catch(() => {
