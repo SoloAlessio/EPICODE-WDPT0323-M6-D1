@@ -1,5 +1,6 @@
 import express from "express";
-import { BlogPost } from "./models/blogPost.js";
+import { BlogPost } from "../models/blogPost.js";
+import { checkAuth } from "../middlewares/authControl.js";
 
 const blogPostRouter = express.Router();
 
@@ -29,8 +30,8 @@ blogPostRouter
         try {
             const SpecBlogPost = await BlogPost.findById(req.params.id);
 
-            if(SpecBlogPost){
-                res.status(404).send();
+            if(!SpecBlogPost){
+                return res.status(404).send();
             }
 
             res.json(SpecBlogPost)
@@ -39,7 +40,7 @@ blogPostRouter
         }
     })
 
-    .post('/', async (req,res,next) => {
+    .post('/', checkAuth, async (req,res,next) => {
         try {
             const NewBlogPost = new BlogPost(req.body)
             await NewBlogPost.save();
@@ -50,16 +51,16 @@ blogPostRouter
         }
     })
 
-    .delete('/:id', async (req,res,next) => {
+    .delete('/:id', checkAuth, async (req,res,next) => {
         try {
-            const deletedBlogPost = await BlogPost.findByIdAndDelete(rq.params.id)
+            const deletedBlogPost = await BlogPost.findByIdAndDelete(req.params.id)
             res.status(!deletedBlogPost ? 404 : 200).send()
         } catch (error) {
             next(error)
         }
     })
 
-    .put('/:id', async (req,res,next) => {
+    .put('/:id', checkAuth, async (req,res,next) => {
         try {
             const updateBlogPost = await BlogPost.findByIdAndUpdate(
                 req.params.id, 
