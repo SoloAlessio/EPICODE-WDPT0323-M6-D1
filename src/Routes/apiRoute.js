@@ -1,12 +1,12 @@
 import express from "express";
-import authorsRouter from "./authorsRouter.js";
-import blogPostRouter from "./blogPostRouter.js";
+import authorsRoute from "./authorsRoute.js";
+import blogPostRoute from "./blogPostRoute.js";
 
-const apiRouter = express.Router();
+const apiRoute = express.Router();
 
-apiRouter.use(express.json())
+apiRoute.use(express.json())
 
-apiRouter.get("/", (req, res) => {
+apiRoute.get("/", (req, res) => {
 res.status(200).send(/*html*/ `
     <!doctype html>
     <html lang="en">
@@ -24,11 +24,11 @@ res.status(200).send(/*html*/ `
     `);
 })
 
-apiRouter.get("/test", (req, res) => {
+apiRoute.get("/test", (req, res) => {
     res.json({message: "Hello, World!"})
 })
 
-apiRouter.use("/authors", authorsRouter);
-apiRouter.use("/blogPosts", blogPostRouter); 
+apiRoute.use("/authors", authorsRoute);
+apiRoute.use("/blogs", blogPostRoute); 
 
-export default apiRouter;
+export default apiRoute;

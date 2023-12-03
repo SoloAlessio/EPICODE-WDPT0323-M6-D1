@@ -1,17 +1,15 @@
 import express from "express";
-import { Authors } from "../models/authors.js";
+import Author from "../models/authors.js";
+import blogPost from "../models/blogPost.js";
 
-const authorsRouter = express.Router();
+const authorsRoute = express.Router();
 
-authorsRouter
+authorsRoute
 
     .get("/", async (req, res, next) => { /* GET ALL AUTHORS WITH QUERIES */
       try {
-        const {limit, skip, sortBy, order} = req.query;
-        const authors = await Authors.find({
-          // price: { $gte: 300 },
-          // $and: [{ price: { $gte: 100 } }, { price: { $lte: 110 } }],
-        })
+        const { limit, skip, sortBy, order } = req.query;
+        const authors = await Author.find({})
         .sort(
           sortBy && order ? {
             [sortBy]: order,
@@ -27,7 +25,7 @@ authorsRouter
     })
 
     .get("/:id", async (req, res) => { /* GET SPECIFIED AUTHOR */
-      const author = await Authors.findById(req.params.id);
+      const author = await Author.findById(req.params.id);
 
       if (!author) {
         return res.status(404).send();
@@ -36,9 +34,21 @@ authorsRouter
       res.json(author);
     })
 
+    .get("/:id/blogs", async (req, res, next) => { /* GET SPECIFIED AUTHOR BLOGS */
+      try {
+        let author = await blogPost.find({
+          author: req.params.id
+        }).populate({path: "author", select:["name", "surname", "avatar"]})
+        
+        res.send(author)
+      } catch (error) {
+        next(error)
+      }
+    })
+
     .post("/", async (req, res, next) => { /* POST NEW AUTHOR */
       try {
-        const newUser = new Authors(req.body); 
+        const newUser = new Author(req.body); 
         await newUser.save();
 
         res.status(201).send(newUser);
@@ -49,7 +59,7 @@ authorsRouter
     
     .delete("/:id", async (req, res, next) => { /* DELETE SPECIFIED AUTHOR */
       try {
-        const deletedAuthors = await Authors.findByIdAndDelete(req.params.id);
+        const deletedAuthors = await Author.findByIdAndDelete(req.params.id);
         res.status(!deletedAuthors ? 404 : 200).send()
       } catch (error) {
         next(error)
@@ -59,7 +69,7 @@ authorsRouter
 
     .put("/:id", async (req, res, next) => { /* UPDATE SPECIFIED AUTHOR */
       try {
-        const updatedAuthor = await Authors.findByIdAndUpdate(
+        const updatedAuthor = await Author.findByIdAndUpdate(
           req.params.id, 
           req.body, 
           {new: true},
@@ -70,4 +80,4 @@ authorsRouter
       }
     })
 
-export default authorsRouter;
+export default authorsRoute;

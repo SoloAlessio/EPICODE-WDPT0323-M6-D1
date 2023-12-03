@@ -1,27 +1,43 @@
 import express from 'express'
-import apiRouter from './Routers/apiRouter.js';
-import mongoose from 'mongoose'
 import list from "express-list-endpoints";
-import { GenericError } from './middlewares/Error.js';
+import mongoose from 'mongoose'
+import { config } from 'dotenv'
+import apiRoute from './Routes/apiRoute.js';
+import { genericError, unauthorizedError, badRquestError, notFoundError } from './middlewares/ErrorHandlers.js';
 import cors from 'cors';
+config()
 
 const server = express()
-const port = 3030;
+const port = process.env.PORT || 3001;
 
 server.use(express.json())
 server.use(cors())
 
-server.use("/api", apiRouter)
-server.use(GenericError)
+server.use("/api", apiRoute)
 
-mongoose
-  .connect(process.env.MONGO_URL)
-  .then(() => {
+server.use(notFoundError) // 404
+server.use(unauthorizedError) // 401
+server.use(badRquestError) // 400
+server.use(genericError) // 500 (Always LAST ERROR)
+
+
+const InitServer = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URL)
+    console.log("🌚 The server has successfully connected to mongodb.");
+    
     server.listen(port, () => {
-      console.log("🚀 Server listening to port: " + port);
-      /* console.log(list(server)); */
-    });
-  })
-  .catch(() => {
-    console.log("Errore nella connessione al DB");
-  });
+        console.log(
+          "🚀 Server listening to port: " + 
+          port + 
+          "!" + 
+          "\n🌝 The server has these endpoints: \n");
+        console.table(list(server));
+      });
+      
+  } catch (error) {
+    console.log("❌ CONNECTION FAILED! Error: ", error);
+  }
+}
+
+InitServer()
