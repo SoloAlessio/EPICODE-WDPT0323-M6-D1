@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, model } from "mongoose"
 
 const commentsSchema = new Schema(
     {
@@ -12,10 +12,10 @@ const commentsSchema = new Schema(
         },
         post: {
             type: Schema.Types.ObjectId,
-            ref: "BlogPost"
-        }
-    }, 
-    { collection: 'comments' }
+            ref: "BlogPost",
+        },
+    },
+    { collection: "comments" }
 )
 
 export default model("Comment", commentsSchema)
