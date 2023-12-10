@@ -1,8 +1,21 @@
 import express from "express"
 import Author from "../models/authors.js"
 import blogPost from "../models/blogPost.js"
+import path from "path"
+import multer from "multer"
+import { v2 as cloudinary } from "cloudinary"
+import { CloudinaryStorage } from "multer-storage-cloudinary"
 
 const authorsRoute = express.Router()
+
+const cloudinaryStorage = new CloudinaryStorage({
+    cloudinary,
+    params: {
+        folder: "EPICODE-STORAGE",
+    },
+})
+
+const Storage = multer({ storage: cloudinaryStorage })
 
 authorsRoute
 
@@ -87,6 +100,26 @@ authorsRoute
                 { new: true }
             )
             res.json(updatedAuthor)
+        } catch (error) {
+            next(error)
+        }
+    })
+
+    .patch("/:id/avatar", Storage.single("avatar"), async (req, res, next) => {
+        /* PUT A AVATAR IMAGE FOR A SPEC AUTHOR */
+        try {
+            const user = await Author.findByIdAndUpdate(
+                req.params.id,
+                {
+                    avatar: req.file.path,
+                },
+                { new: true }
+            )
+            res.status(204).send({
+                success: true,
+                url: req.file.path,
+                author: user,
+            })
         } catch (error) {
             next(error)
         }

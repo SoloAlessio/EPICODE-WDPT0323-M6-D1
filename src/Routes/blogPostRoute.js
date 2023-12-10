@@ -2,6 +2,19 @@ import express from "express"
 import BlogPost from "../models/blogPost.js"
 import Comment from "../models/comments.js"
 import { checkAuth } from "../middlewares/authControl.js"
+import path from "path"
+import multer from "multer"
+import { v2 as cloudinary } from "cloudinary"
+import { CloudinaryStorage } from "multer-storage-cloudinary"
+
+const cloudinaryStorage = new CloudinaryStorage({
+    cloudinary,
+    params: {
+        folder: "EPICODE-STORAGE",
+    },
+})
+
+const Storage = multer({ storage: cloudinaryStorage })
 
 const blogPostRoute = express.Router()
 
@@ -166,6 +179,26 @@ blogPostRoute
             ).populate("author")
 
             res.send(updatedComment)
+        } catch (error) {
+            next(error)
+        }
+    })
+
+    .patch("/:id/cover", Storage.single("cover"), async (req, res, next) => {
+        /* PUT A NEW COVER FOR A SPEC. BLOGPOST */
+        try {
+            const user = await BlogPost.findByIdAndUpdate(
+                req.params.id,
+                {
+                    cover: req.file.path,
+                },
+                { new: true }
+            )
+            res.status(204).send({
+                success: true,
+                url: req.file.path,
+                author: user,
+            })
         } catch (error) {
             next(error)
         }
