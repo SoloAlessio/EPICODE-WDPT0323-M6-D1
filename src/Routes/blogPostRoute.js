@@ -6,6 +6,7 @@ import path from "path"
 import multer from "multer"
 import { v2 as cloudinary } from "cloudinary"
 import { CloudinaryStorage } from "multer-storage-cloudinary"
+import sgMail from "@sendgrid/mail"
 
 const cloudinaryStorage = new CloudinaryStorage({
     cloudinary,
@@ -13,6 +14,8 @@ const cloudinaryStorage = new CloudinaryStorage({
         folder: "EPICODE-STORAGE",
     },
 })
+
+sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
 const Storage = multer({ storage: cloudinaryStorage })
 
@@ -97,6 +100,29 @@ blogPostRoute
         /* POST A NEW BLOG */
         try {
             const NewBlogPost = await BlogPost.create(req.body)
+            const createdPost = await BlogPost.findById(
+                NewBlogPost._id
+            ).populate("author")
+            const mail = await createdPost.author.email
+
+            if (mail) {
+                const msg = {
+                    to: mail,
+                    from: "sender.example@outlook.it",
+                    subject: "TESTING MAIL",
+                    text: "This is a testing mail foìron a radon oerso",
+                    html: "<strong>TEsstin mail</strong>",
+                }
+                sgMail
+                    .send(msg)
+                    .then(() => {
+                        console.log("Email sent")
+                    })
+                    .catch((error) => {
+                        console.error(error)
+                    })
+            }
+
             res.status(201).send(NewBlogPost)
         } catch (error) {
             next(error)
@@ -194,7 +220,7 @@ blogPostRoute
                 },
                 { new: true }
             )
-            res.status(204).send({
+            res.status(200).send({
                 success: true,
                 url: req.file.path,
                 author: user,
