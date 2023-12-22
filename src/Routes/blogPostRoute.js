@@ -3,6 +3,7 @@ import BlogPost from "../models/blogPost.js"
 import Comment from "../models/comments.js"
 import { checkAuth } from "../middlewares/authControl.js"
 import path from "path"
+import q2m from "query-to-mongo"
 import multer from "multer"
 import { v2 as cloudinary } from "cloudinary"
 import { CloudinaryStorage } from "multer-storage-cloudinary"
@@ -26,20 +27,12 @@ blogPostRoute
     .get("/", async (req, res, next) => {
         /* GET ALL BLOGS */
         try {
-            const { limit, skip, sortBy, order } = req.query
-            const BlogPosts = await BlogPost.find({})
-                .sort(
-                    sortBy && order
-                        ? {
-                              [sortBy]: order,
-                          }
-                        : undefined
-                )
-                .skip(skip)
-                .limit(limit)
-                .populate("author")
+            let { criteria } = q2m(req.query)
+            let blogs = await BlogPost.find(criteria).populate(
+                "comments author"
+            )
 
-            res.json(BlogPosts)
+            res.send(blogs)
         } catch (error) {
             next(error)
         }
@@ -48,15 +41,8 @@ blogPostRoute
     .get("/:id", async (req, res, next) => {
         /* GET A SPEC BLOG */
         try {
-            const SpecBlogPost = await BlogPost.findById(
-                req.params.id
-            ).populate("author")
-
-            if (!SpecBlogPost) {
-                return res.status(404).send()
-            }
-
-            res.json(SpecBlogPost)
+            let blog = await BlogPost.findById(req.params.id).populate("author")
+            res.send(blog)
         } catch (error) {
             next(error)
         }
@@ -108,7 +94,7 @@ blogPostRoute
             if (mail) {
                 const msg = {
                     to: mail,
-                    from: "sender.example@outlook.it",
+                    from: "Sender.Example@outlook.it",
                     subject: "TESTING MAIL",
                     text: "This is a testing mail foìron a radon oerso",
                     html: "<strong>TEsstin mail</strong>",
@@ -116,14 +102,14 @@ blogPostRoute
                 sgMail
                     .send(msg)
                     .then(() => {
-                        console.log("Email sent")
+                        console.log("Email sent", mail)
                     })
                     .catch((error) => {
                         console.error(error)
                     })
             }
 
-            res.status(201).send(NewBlogPost)
+            res.send(NewBlogPost)
         } catch (error) {
             next(error)
         }
@@ -136,7 +122,6 @@ blogPostRoute
                 ...req.body,
                 post: req.params.id,
             })
-            console.log(newComment)
 
             let post = await BlogPost.findByIdAndUpdate(
                 req.params.id,
@@ -146,7 +131,14 @@ blogPostRoute
                     },
                 },
                 { new: true }
-            )
+            ).populate({
+                path: "comments",
+                populate: {
+                    path: "author",
+                    model: "Author",
+                    select: ["name", "lastName", "avatar"],
+                },
+            })
             res.send(post)
         } catch (error) {
             next(error)
@@ -156,10 +148,10 @@ blogPostRoute
     .delete("/:id", checkAuth, async (req, res, next) => {
         /* DELETE A SPEC BLOG */
         try {
-            const deletedBlogPost = await BlogPost.findByIdAndDelete(
-                req.params.id
-            )
-            res.status(!deletedBlogPost ? 404 : 200).send()
+            await BlogPost.deleteOne({
+                _id: req.params.id,
+            })
+            res.status(204).send()
         } catch (error) {
             next(error)
         }
@@ -168,7 +160,7 @@ blogPostRoute
     .delete("/:id/comments/:commentId", checkAuth, async (req, res, next) => {
         /* DELETE A SPEC COMMENT */
         try {
-            let comment = await Comment.findOneAndDelete({
+            await Comment.findOneAndDelete({
                 post: req.params.id,
                 _id: req.params.commentId,
             })
@@ -195,16 +187,20 @@ blogPostRoute
     .put("/:id/comments/:commentId", checkAuth, async (req, res, next) => {
         /* UPDATE A SPEC COMMENT */
         try {
-            let updatedComment = await Comment.findOneAndUpdate(
+            let comment = await Comment.findOneAndUpdate(
                 {
                     post: req.params.id,
                     _id: req.params.commentId,
                 },
                 req.body,
                 { new: true }
-            ).populate("author")
+            ).populate({
+                path: "author",
+                model: "Author",
+                select: ["name", "surname", "avatar"],
+            })
 
-            res.send(updatedComment)
+            res.send(comment)
         } catch (error) {
             next(error)
         }
@@ -220,11 +216,7 @@ blogPostRoute
                 },
                 { new: true }
             )
-            res.status(200).send({
-                success: true,
-                url: req.file.path,
-                author: user,
-            })
+            res.send(user)
         } catch (error) {
             next(error)
         }

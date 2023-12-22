@@ -1,6 +1,7 @@
 import express from "express"
 import authorsRoute from "./authorsRoute.js"
 import blogPostRoute from "./blogPostRoute.js"
+import loginRoute from "./login.js"
 
 const apiRoute = express.Router()
 
@@ -39,5 +40,6 @@ apiRoute.get("/test", (req, res) => {
 
 apiRoute.use("/authors", authorsRoute)
 apiRoute.use("/blogs", blogPostRoute)
+apiRoute.use("/login", loginRoute)
 
 export default apiRoute

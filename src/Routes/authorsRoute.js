@@ -5,6 +5,8 @@ import path from "path"
 import multer from "multer"
 import { v2 as cloudinary } from "cloudinary"
 import { CloudinaryStorage } from "multer-storage-cloudinary"
+import jwt from "jsonwebtoken"
+import bcrypt from "bcrypt"
 
 const authorsRoute = express.Router()
 
@@ -71,14 +73,22 @@ authorsRoute
 
     .post("/", async (req, res, next) => {
         /* POST NEW AUTHOR */
-        try {
-            const newUser = new Author(req.body)
-            await newUser.save()
+        const newUser = await Author.create(req.body)
 
-            res.status(201).send(newUser)
-        } catch (error) {
-            next(error)
+        res.status(201).json(newUser)
+    })
+
+    .post("/login", async (req, res, next) => {
+        const { email } = req.body
+        const user = await Author.findOne({ email })
+        if (!user) {
+            return res.status(404).json({ message: "User not found" })
         }
+
+        const payload = { id: user._id }
+        console.log(payload)
+        const token = jwt.sign(payload, "SEGRETO", { expiresIn: "1h" })
+        res.status(200).json({ token: token, userId: user._id })
     })
 
     .delete("/:id", async (req, res, next) => {
