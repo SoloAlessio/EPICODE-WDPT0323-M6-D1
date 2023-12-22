@@ -5,8 +5,9 @@ import path from "path"
 import multer from "multer"
 import { v2 as cloudinary } from "cloudinary"
 import { CloudinaryStorage } from "multer-storage-cloudinary"
-import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
+import loginRoute from "./login.js"
+import { checkAuth } from "../middlewares/authControl.js"
 
 const authorsRoute = express.Router()
 
@@ -71,27 +72,7 @@ authorsRoute
         }
     })
 
-    .post("/", async (req, res, next) => {
-        /* POST NEW AUTHOR */
-        const newUser = await Author.create(req.body)
-
-        res.status(201).json(newUser)
-    })
-
-    .post("/login", async (req, res, next) => {
-        const { email } = req.body
-        const user = await Author.findOne({ email })
-        if (!user) {
-            return res.status(404).json({ message: "User not found" })
-        }
-
-        const payload = { id: user._id }
-        console.log(payload)
-        const token = jwt.sign(payload, "SEGRETO", { expiresIn: "1h" })
-        res.status(200).json({ token: token, userId: user._id })
-    })
-
-    .delete("/:id", async (req, res, next) => {
+    .delete("/:id", checkAuth, async (req, res, next) => {
         /* DELETE SPECIFIED AUTHOR */
         try {
             const deletedAuthors = await Author.findByIdAndDelete(req.params.id)
@@ -101,11 +82,11 @@ authorsRoute
         }
     })
 
-    .put("/:id", async (req, res, next) => {
+    .put("/", checkAuth, async (req, res, next) => {
         /* UPDATE SPECIFIED AUTHOR */
         try {
             const updatedAuthor = await Author.findByIdAndUpdate(
-                req.params.id,
+                req.user._id,
                 req.body,
                 { new: true }
             )
@@ -115,24 +96,28 @@ authorsRoute
         }
     })
 
-    .patch("/:id/avatar", Storage.single("avatar"), async (req, res, next) => {
-        /* PUT A AVATAR IMAGE FOR A SPEC AUTHOR */
-        try {
-            const user = await Author.findByIdAndUpdate(
-                req.params.id,
-                {
-                    avatar: req.file.path,
-                },
-                { new: true }
-            )
-            res.status(204).send({
-                success: true,
-                url: req.file.path,
-                author: user,
-            })
-        } catch (error) {
-            next(error)
+    .patch(
+        "/avatar",
+        Storage.single("avatar"),
+        checkAuth,
+        async (req, res, next) => {
+            /* PUT A AVATAR IMAGE FOR A SPEC AUTHOR */
+            try {
+                const user = await Author.findByIdAndUpdate(
+                    req.user._id,
+                    {
+                        avatar: req.file.path,
+                    },
+                    { new: true }
+                )
+                res.status(204).send({
+                    success: true,
+                    url: req.file.path,
+                    author: user,
+                })
+            } catch (error) {
+                next(error)
+            }
         }
-    })
-
+    )
 export default authorsRoute

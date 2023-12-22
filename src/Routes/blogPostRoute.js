@@ -95,9 +95,9 @@ blogPostRoute
                 const msg = {
                     to: mail,
                     from: "Sender.Example@outlook.it",
-                    subject: "TESTING MAIL",
-                    text: "This is a testing mail foìron a radon oerso",
-                    html: "<strong>TEsstin mail</strong>",
+                    subject: createdPost.title,
+                    text: "You created a new blog post",
+                    html: `<strong>Congratulazioni! hai creato un nuovo post: </strong>${createdPost.category} - ${createdPost.title}</strong>`,
                 }
                 sgMail
                     .send(msg)

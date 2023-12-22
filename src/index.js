@@ -1,33 +1,25 @@
-import express from "express"
-import list from "express-list-endpoints"
-import mongoose from "mongoose"
-import { config } from "dotenv"
-import apiRoute from "./Routes/apiRoute.js"
 import {
     genericError,
     unauthorizedError,
     badRquestError,
     notFoundError,
 } from "./middlewares/ErrorHandlers.js"
+import express from "express"
+import list from "express-list-endpoints"
+import mongoose from "mongoose"
+import { config } from "dotenv"
+import apiRoute from "./Routes/apiRoute.js"
 import cors from "cors"
+import passport from "passport"
+import googleStrategy from "./middlewares/oauth/google.js"
 config()
 
 const server = express()
 const port = process.env.PORT || 3001
 
 server.use(express.json())
-
-/* let whiteList = ["http://localhost:5173"]
-let corsOptions = {
-    origin: function (origin, callback) {
-        if (whiteList.indexOf(origin) !== -1) {
-            callback(null, true)
-        } else {
-            callback(new Error("Not Allowed by CORS"))
-        }
-    },
-} */
 server.use(cors())
+passport.use(googleStrategy)
 
 server.use("/api", apiRoute)
 

@@ -2,6 +2,10 @@ import { Schema, model } from "mongoose"
 
 const AuthorSchema = new Schema(
     {
+        googleId: {
+            type: String,
+            required: false,
+        },
         name: {
             type: String,
             required: true,
@@ -11,6 +15,10 @@ const AuthorSchema = new Schema(
             required: true,
         },
         email: {
+            type: String,
+            required: true,
+        },
+        password: {
             type: String,
             required: true,
         },
