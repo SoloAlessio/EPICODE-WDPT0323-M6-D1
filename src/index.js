@@ -15,7 +15,7 @@ import googleStrategy from "./middlewares/oauth/google.js"
 config()
 
 const server = express()
-const port = process.env.PORT || 3001
+const port = process.env.PORT || 3030
 
 server.use(cors())
 server.use(express.json())
