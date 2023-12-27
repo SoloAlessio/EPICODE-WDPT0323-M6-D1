@@ -53,7 +53,7 @@ loginRoute
             const token = jwt.sign(payload, process.env.JWT_SECRET)
 
             res.redirect(
-                `${process.env.SITE_URL}main?token=${token}&userId=${req.user._id}`
+                `${process.env.SITE_URL}/main?token=${token}&userId=${req.user._id}`
             )
         }
     )
