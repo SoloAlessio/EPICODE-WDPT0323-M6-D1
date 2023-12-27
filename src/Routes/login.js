@@ -39,13 +39,13 @@ loginRoute
         "/oauth-google",
         passport.authenticate("google", {
             scope: ["profile", "email"],
-            prompt: "select Account",
+            prompt: "select_account",
         })
     )
     .get(
         "/oauth-callback",
         passport.authenticate("google", {
-            failureRedirect: "/",
+            failureRedirect: "/login",
             session: false,
         }),
         async (req, res) => {
@@ -53,7 +53,7 @@ loginRoute
             const token = jwt.sign(payload, process.env.JWT_SECRET)
 
             res.redirect(
-                `http://localhost:5173?token=${token}&userId=${req.user._id}`
+                `http://localhost:5173/main?token=${token}&userId=${req.user._id}`
             )
         }
     )

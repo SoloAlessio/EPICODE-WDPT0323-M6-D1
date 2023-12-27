@@ -17,8 +17,8 @@ config()
 const server = express()
 const port = process.env.PORT || 3001
 
-server.use(express.json())
 server.use(cors())
+server.use(express.json())
 passport.use(googleStrategy)
 
 server.use("/api", apiRoute)

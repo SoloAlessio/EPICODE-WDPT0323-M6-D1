@@ -5,21 +5,20 @@ const googleStrategy = new GoogleStrategy(
     {
         clientID: process.env.CLIENT_ID,
         clientSecret: process.env.CLIENT_SECRET,
-        callbackUrl: "http://localhost:5173/api/login/oauth-google",
+        callbackURL: process.env.CALLBACK_URL,
     },
     async function (_, __, profile, cb) {
-        console.log(profile)
-        /* let user = Author.findOne({ googleId: profile.id })
+        let user = await Author.findOne({ googleId: profile.id })
 
         if (!user) {
             user = await Author.create({
                 googleId: profile.id,
-                name: profile.name,
-                surname: profile.surname,
+                name: profile.name.givenName,
+                surname: profile.name.familyName,
                 email: profile.emails[0].value,
             })
         }
-        cb(null, profile) */
+        cb(null, user)
     }
 )
 

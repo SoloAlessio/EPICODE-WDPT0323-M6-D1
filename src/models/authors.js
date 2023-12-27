@@ -20,11 +20,13 @@ const AuthorSchema = new Schema(
         },
         password: {
             type: String,
-            required: true,
+            required: function () {
+                return this.googleId ? false : true
+            },
         },
         birthDate: {
             type: String,
-            required: true,
+            required: false,
         },
         avatar: {
             type: String,
